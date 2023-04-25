@@ -44,42 +44,24 @@ def calculate_forces(pos):
                 F_net[i] += F_ij
                 F_net[j] -= F_ij
     return F_net 
-
  
 #define a function to perform the Verlet integration scheme
 def verlet_integrate(pos, vel, dt, mass):
     acc = calculate_forces(pos) / mass
     pos_new = pos + dt*vel + 0.5 * acc*dt*dt
-    if pos_new.any() <= 0.5*box_size:
-        acc_new = (1.0/mass) * acc
-        vel_new = vel + (dt/2) * (acc+acc_new)
-    else:
-        pos_new[0] = pos[0]*-1
+    acc_new = (1.0/mass) * acc
+    vel_new = vel + (dt/2) * (acc+acc_new)
     return pos_new, vel_new
 
 #perform the Verlet integration for a specified number of timesteps
 num_steps = 10000
 position = np.zeros(num_steps)
-time = np.zeros(num_steps)
 
-for i in range(num_steps):                       #verlet_integrate function not used here to allow for if statement to work
-    acc = calculate_forces(pos) / mass
-    pos_new = pos + dt*vel + 0.5 * acc*dt*dt
-    if pos_new.any() <= 0.5*box_size:             #if particle is within box continue
-        acc_new = (1.0/mass) * acc
-        vel_new = vel + (dt/2) * (acc+acc_new)
-
-    position[i]=((np.sqrt(np.sum((pos_new[0]-pos_new[1])**2))))
-    time[i] = i * dt
-        
-position = position/sigma
-print(position)
+for i in range(num_steps):
+    position[i] = (np.sqrt(np.sum((pos[0]-pos[1])**2)))
+    pos, vel = verlet_integrate(pos, vel, dt, mass)
 
 import matplotlib.pyplot as plt
-#plot against time to see how the distnace beeen the particles changes over time
-fig, ax = plt.subplots()
-ax.plot(time, position)
 
-#plot distance between particles against lennard jones potential
 fig, ax = plt.subplots()
 ax.plot(position, LJ_potential(position))
